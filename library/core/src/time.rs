@@ -1773,6 +1773,14 @@ pub mod duration_verify {
         let _ = Duration::new(secs, nanos);
     }
 
+    #[kani::proof]
+    #[kani::should_panic]
+    fn duration_new_should_panic() {
+        let secs = kani::any::<u64>();
+        let nanos = kani::any::<u32>();
+        let _ = Duration::new(secs, nanos);
+    }
+
     #[kani::proof_for_contract(Duration::from_secs)]
     fn duration_from_secs() {
         let secs = kani::any::<u64>();
