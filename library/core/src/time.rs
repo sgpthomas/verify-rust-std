@@ -873,7 +873,7 @@ impl Duration {
             // TODO: why does this debug assert cause verification to timeout
             //       it checks the same condition that is checked by the post-condition,
             //       so it seems like it shouldn't change verification behavior
-            // debug_assert!((nanos < NANOS_PER_SEC || secs.checked_add((nanos / NANOS_PER_SEC) as u64).is_some()));
+            debug_assert!(nanos < NANOS_PER_SEC);
             Some(Duration::new(secs, nanos))
         } else {
             None
