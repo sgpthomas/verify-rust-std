@@ -522,7 +522,6 @@ impl Duration {
     #[rustc_const_stable(feature = "duration_consts", since = "1.32.0")]
     #[must_use]
     #[inline]
-    #[requires(self.is_safe())]
     #[ensures(|secs| *secs == self.secs)]
     pub const fn as_secs(&self) -> u64 {
         self.secs
@@ -547,7 +546,6 @@ impl Duration {
     #[rustc_const_stable(feature = "duration_consts", since = "1.32.0")]
     #[must_use]
     #[inline]
-    #[requires(self.is_safe())]
     #[ensures(|ms| *ms == self.nanos.0 / NANOS_PER_MILLI)]
     pub const fn subsec_millis(&self) -> u32 {
         self.nanos.0 / NANOS_PER_MILLI
@@ -572,7 +570,6 @@ impl Duration {
     #[rustc_const_stable(feature = "duration_consts", since = "1.32.0")]
     #[must_use]
     #[inline]
-    #[requires(self.is_safe())]
     #[ensures(|ms| *ms == self.nanos.0 / NANOS_PER_MICRO)]
     pub const fn subsec_micros(&self) -> u32 {
         self.nanos.0 / NANOS_PER_MICRO
@@ -597,7 +594,6 @@ impl Duration {
     #[rustc_const_stable(feature = "duration_consts", since = "1.32.0")]
     #[must_use]
     #[inline]
-    #[requires(self.is_safe())]
     #[ensures(|nanos| *nanos == self.nanos.0)]
     pub const fn subsec_nanos(&self) -> u32 {
         self.nanos.0
@@ -617,7 +613,6 @@ impl Duration {
     #[rustc_const_stable(feature = "duration_as_u128", since = "1.33.0")]
     #[must_use]
     #[inline]
-    #[requires(self.is_safe())]
     #[ensures(|ms| *ms == self.secs as u128 * MILLIS_PER_SEC as u128 + (self.nanos.0 / NANOS_PER_MILLI) as u128)]
     pub const fn as_millis(&self) -> u128 {
         self.secs as u128 * MILLIS_PER_SEC as u128 + (self.nanos.0 / NANOS_PER_MILLI) as u128
@@ -637,7 +632,6 @@ impl Duration {
     #[rustc_const_stable(feature = "duration_as_u128", since = "1.33.0")]
     #[must_use]
     #[inline]
-    #[requires(self.is_safe())]
     #[ensures(|ms| *ms == self.secs as u128 * MICROS_PER_SEC as u128 + (self.nanos.0 / NANOS_PER_MICRO) as u128)]
     pub const fn as_micros(&self) -> u128 {
         self.secs as u128 * MICROS_PER_SEC as u128 + (self.nanos.0 / NANOS_PER_MICRO) as u128
@@ -657,9 +651,6 @@ impl Duration {
     #[rustc_const_stable(feature = "duration_as_u128", since = "1.33.0")]
     #[must_use]
     #[inline]
-    #[requires(self.is_safe())]
-    #[requires(self.secs * (NANOS_PER_SEC as u64) + (self.nanos.0 as u64) < u64::MAX)]
-    #[ensures(|nanos| *nanos == self.secs as u128 * NANOS_PER_SEC as u128 + self.nanos.0 as u128)]
     pub const fn as_nanos(&self) -> u128 {
         self.secs as u128 * NANOS_PER_SEC as u128 + self.nanos.0 as u128
     }
@@ -700,8 +691,6 @@ impl Duration {
                   without modifying the original"]
     #[inline]
     #[rustc_const_stable(feature = "duration_consts_2", since = "1.58.0")]
-    #[requires(self.is_safe())]
-    #[requires(rhs.is_safe())]
     #[ensures(|duration| !duration.is_some() || duration.unwrap().is_safe())]
     pub const fn checked_add(self, rhs: Duration) -> Option<Duration> {
         if let Some(mut secs) = self.secs.checked_add(rhs.secs) {
@@ -761,8 +750,6 @@ impl Duration {
                   without modifying the original"]
     #[inline]
     #[rustc_const_stable(feature = "duration_consts_2", since = "1.58.0")]
-    #[requires(self.is_safe())]
-    #[requires(rhs.is_safe())]
     #[ensures(|duration| !duration.is_some() || duration.unwrap().is_safe())]
     pub const fn checked_sub(self, rhs: Duration) -> Option<Duration> {
         if let Some(mut secs) = self.secs.checked_sub(rhs.secs) {
@@ -820,7 +807,6 @@ impl Duration {
                   without modifying the original"]
     #[inline]
     #[rustc_const_stable(feature = "duration_consts_2", since = "1.58.0")]
-    #[requires(self.is_safe())]
     #[ensures(|duration| !duration.is_some() || duration.unwrap().is_safe())]
     pub const fn checked_mul(self, rhs: u32) -> Option<Duration> {
         // Multiply nanoseconds as u64, because it cannot overflow that way.
@@ -876,7 +862,6 @@ impl Duration {
     #[must_use = "this returns the result of the operation, \
                   without modifying the original"]
     #[inline]
-    #[requires(self.is_safe())]
     #[ensures(|duration| rhs == 0 || duration.unwrap().is_safe())]
     #[rustc_const_stable(feature = "duration_consts_2", since = "1.58.0")]
     pub const fn checked_div(self, rhs: u32) -> Option<Duration> {
@@ -1812,25 +1797,6 @@ pub mod duration_verify {
         let _ = Duration::from_nanos(nanos);
     }
 
-    #[kani::proof_for_contract(Duration::as_millis)]
-    fn duration_as_millis() {
-        let dur = kani::any::<Duration>();
-        let _ = dur.as_millis();
-    }
-
-    #[kani::proof_for_contract(Duration::as_nanos)]
-    // timed out! (investigate)
-    fn duration_as_nanos() {
-        let dur = kani::any::<Duration>();
-        let _ = dur.as_nanos();
-    }
-
-    #[kani::proof_for_contract(Duration::as_micros)]
-    fn duration_as_micros() {
-        let dur = kani::any::<Duration>();
-        let _ = dur.as_micros();
-    }
-
     #[kani::proof_for_contract(Duration::as_secs)]
     fn duration_as_secs() {
         let dur = kani::any::<Duration>();
@@ -1853,6 +1819,24 @@ pub mod duration_verify {
     fn duration_subsec_nanos() {
         let dur = kani::any::<Duration>();
         let _ = dur.subsec_nanos();
+    }
+
+    #[kani::proof_for_contract(Duration::as_millis)]
+    fn duration_as_millis() {
+        let dur = kani::any::<Duration>();
+        let _ = dur.as_millis();
+    }
+
+    #[kani::proof_for_contract(Duration::as_micros)]
+    fn duration_as_micros() {
+        let dur = kani::any::<Duration>();
+        let _ = dur.as_micros();
+    }
+
+    #[kani::proof]
+    fn duration_as_nanos() {
+        let dur = kani::any::<Duration>();
+        let _ = dur.as_nanos();
     }
 
     #[kani::proof_for_contract(Duration::checked_add)]
