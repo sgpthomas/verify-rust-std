@@ -19,13 +19,16 @@
 //! assert_eq!(total, Duration::new(10, 7));
 //! ```
 
-use safety::{ensures, requires};
+use safety::{ensures, Invariant, requires};
 use crate::fmt;
 use crate::iter::Sum;
 use crate::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 #[cfg(kani)]
 use crate::kani;
+
+#[cfg(kani)]
+use crate::ub_checks::Invariant;
 
 const NANOS_PER_SEC: u32 = 1_000_000_000;
 const NANOS_PER_MILLI: u32 = 1_000_000;
@@ -41,9 +44,6 @@ const HOURS_PER_DAY: u64 = 24;
 #[unstable(feature = "duration_units", issue = "120301")]
 const DAYS_PER_WEEK: u64 = 7;
 
-trait TempInvariant {
-    fn is_safe(&self) -> bool;
-}
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(transparent)]
@@ -51,10 +51,8 @@ trait TempInvariant {
 #[rustc_layout_scalar_valid_range_end(999_999_999)]
 struct Nanoseconds(u32);
 
-// We couldn't get the `kani::Invariant` trait to work, so here is a temporary
-// implementation that matches what that trait would be. Once pr #87 is merged,
-// we will update this to use `kani::Invariant`
-impl TempInvariant for Nanoseconds {
+#[cfg(kani)]
+impl Invariant for Nanoseconds {
     fn is_safe(&self) -> bool {
         self.0 < NANOS_PER_SEC
     }
@@ -112,17 +110,11 @@ impl Default for Nanoseconds {
 #[stable(feature = "duration", since = "1.3.0")]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 #[cfg_attr(not(test), rustc_diagnostic_item = "Duration")]
-// #[cfg_attr(kani, derive(kani_core::Invariant))]
+#[cfg_attr(kani, derive(Invariant))]
 pub struct Duration {
     secs: u64,
     // #[safety_constraint(*nanos.0 < NANOS_PER_SEC)]
     nanos: Nanoseconds, // Always 0 <= nanos < NANOS_PER_SEC
-}
-
-impl TempInvariant for Duration {
-    fn is_safe(&self) -> bool {
-        self.nanos.is_safe()
-    }
 }
 
 impl Duration {
