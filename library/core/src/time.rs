@@ -27,7 +27,6 @@ use crate::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign}
 #[cfg(kani)]
 use crate::kani;
 
-#[cfg(kani)]
 use crate::ub_checks::Invariant;
 
 const NANOS_PER_SEC: u32 = 1_000_000_000;
@@ -51,7 +50,6 @@ const DAYS_PER_WEEK: u64 = 7;
 #[rustc_layout_scalar_valid_range_end(999_999_999)]
 struct Nanoseconds(u32);
 
-#[cfg(kani)]
 impl Invariant for Nanoseconds {
     fn is_safe(&self) -> bool {
         self.0 < NANOS_PER_SEC
@@ -110,10 +108,9 @@ impl Default for Nanoseconds {
 #[stable(feature = "duration", since = "1.3.0")]
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 #[cfg_attr(not(test), rustc_diagnostic_item = "Duration")]
-#[cfg_attr(kani, derive(Invariant))]
+#[derive(Invariant)]
 pub struct Duration {
     secs: u64,
-    // #[safety_constraint(*nanos.0 < NANOS_PER_SEC)]
     nanos: Nanoseconds, // Always 0 <= nanos < NANOS_PER_SEC
 }
 
