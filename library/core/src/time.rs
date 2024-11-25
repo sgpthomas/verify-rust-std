@@ -737,7 +737,7 @@ impl Duration {
                   without modifying the original"]
     #[inline]
     #[rustc_const_stable(feature = "duration_consts_2", since = "1.58.0")]
-    #[ensures(|duration| !duration.is_some() || duration.unwrap().is_safe())]
+    #[ensures(|duration| duration.is_none() || duration.unwrap().is_safe())]
     pub const fn checked_sub(self, rhs: Duration) -> Option<Duration> {
         if let Some(mut secs) = self.secs.checked_sub(rhs.secs) {
             let nanos = if self.nanos.0 >= rhs.nanos.0 {
