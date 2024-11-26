@@ -4,6 +4,9 @@ use crate::mem::{self, ManuallyDrop, MaybeUninit};
 use crate::slice::sort::shared::FreezeMarker;
 use crate::{intrinsics, ptr, slice};
 
+#[cfg(kani)]
+use crate::kani;
+
 // It's important to differentiate between SMALL_SORT_THRESHOLD performance for
 // small slices and small-sort performance sorting small sub-slices as part of
 // the main quicksort loop. For the former, testing showed that the
@@ -869,4 +872,83 @@ fn panic_on_ord_violation() -> ! {
 pub(crate) const fn has_efficient_in_place_swap<T>() -> bool {
     // Heuristic that holds true on all tested 64-bit capable architectures.
     mem::size_of::<T>() <= 8 // mem::size_of::<u64>()
+}
+
+#[cfg(kani)]
+#[unstable(feature = "kani", issue = "none")]
+pub mod smallsort_verify {
+    use super::*;
+    use crate::kani;
+    use crate::sync::atomic::AtomicU32;
+
+    // CV: just trying to get some proofs through with u8 first. Not 
+    // sure how to handle generics here, could write macros for built-in types.
+
+    // Run with these CLI args for now: 
+    // function-contracts -Z mem-predicates --harness smallsort --no-default-checks --default-unwind 10
+    
+    #[kani::proof]
+    fn has_efficient_in_place_swap_proof() {
+        has_efficient_in_place_swap::<u8>();
+    }
+
+    /*
+    #[kani::proof]
+    fn swap_if_less_proof() {
+        
+    }
+
+    #[kani::proof]
+    fn sort4_stable_proof() {
+
+    } 
+    */
+
+    #[kani::proof]
+    fn insertion_sort_shift_left_proof() {
+        let mut x: [u8; SMALL_SORT_FALLBACK_THRESHOLD] = kani::any();
+        let offset: usize = kani::any();
+        kani::assume(offset != 0);
+        kani::assume(offset <= x.len());
+        insertion_sort_shift_left(&mut x, offset, &mut |lhs, rhs| lhs < rhs);
+    }
+
+    #[kani::proof]
+    #[kani::should_panic]
+    fn insertion_sort_shift_left_panics() {
+        let mut x: [u8; SMALL_SORT_FALLBACK_THRESHOLD] = kani::any();
+        let offset: usize = kani::any();
+        insertion_sort_shift_left(&mut x, offset, &mut |lhs, rhs| lhs < rhs);
+    }
+
+    #[kani::proof]
+    fn stable_small_sort_type_impl_proof() {
+        // Small sort threshold is 16.
+        let mut x: [u8; SMALL_SORT_FALLBACK_THRESHOLD] = kani::any();
+        <u8 as slice::sort::shared::smallsort::StableSmallSortTypeImpl>::small_sort(
+            &mut x,
+            &mut [],
+            &mut |lhs, rhs| lhs < rhs,
+        );
+    }
+
+    #[kani::proof]
+    fn unstable_small_sort_type_impl_proof() {
+        // Small sort threshold is 16.
+        let mut x: [u8; SMALL_SORT_FALLBACK_THRESHOLD] = kani::any();
+        <u8 as slice::sort::shared::smallsort::UnstableSmallSortTypeImpl>::small_sort(
+            &mut x,
+            &mut |lhs, rhs| lhs < rhs,
+        );
+    }
+
+    #[kani::proof]
+    fn unstable_small_sort_freeze_type_impl_proof() {
+        // Small sort threshold is 16.
+        let mut x: [u8; SMALL_SORT_FALLBACK_THRESHOLD] = kani::any();
+        <u8 as slice::sort::shared::smallsort::UnstableSmallSortFreezeTypeImpl>::small_sort(
+            &mut x,
+            &mut |lhs, rhs| lhs < rhs,
+        );
+    }
 }
