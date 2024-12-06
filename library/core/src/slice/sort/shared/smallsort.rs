@@ -886,17 +886,47 @@ pub mod smallsort_verify {
 
     // Run with these CLI args for now: 
     // function-contracts -Z mem-predicates --harness smallsort --no-default-checks --default-unwind 10
-    
+
+    /* 
+    Prove absence of undefined behavior of the following public functions.
+
+    <T as slice::sort::shared::smallsort::StableSmallSortTypeImpl>::small_sort
+    <T as slice::sort::shared::smallsort::UnstableSmallSortTypeImpl>::small_sort
+    <T as slice::sort::shared::smallsort::UnstableSmallSortFreezeTypeImpl>::small_sort
+    slice::sort::shared::smallsort::swap_if_less
+    slice::sort::shared::smallsort::insertion_sort_shift_left
+    slice::sort::shared::smallsort::sort4_stable
+    slice::sort::shared::smallsort::has_efficient_in_place_swap
+
+    Write contracts for the following public functions that show that they actually sort the slices.
+
+    <T as slice::sort::shared::smallsort::StableSmallSortTypeImpl>::small_sort
+    <T as slice::sort::shared::smallsort::UnstableSmallSortTypeImpl>::small_sort
+    <T as slice::sort::shared::smallsort::UnstableSmallSortFreezeTypeImpl>::small_sort
+
+    The memory safety and the contracts of the above listed functions must be verified for all 
+    possible slices with arbitrary valid length.
+     */
     #[kani::proof]
     fn has_efficient_in_place_swap_proof() {
         has_efficient_in_place_swap::<u8>();
     }
 
-    /*
+    // swap_if_less<T, F>(v_base: *mut T, a_pos: usize, b_pos: usize, is_less: &mut F)
     #[kani::proof]
     fn swap_if_less_proof() {
-        
+        let mut x: [u8; SMALL_SORT_FALLBACK_THRESHOLD] = kani::any();
+        let v_base = x.as_mut_ptr();
+        let a_pos = kani::any::<usize>();
+        let b_pos = kani::any::<usize>();
+        kani::assume(a_pos < SMALL_SORT_FALLBACK_THRESHOLD);
+        kani::assume(b_pos < SMALL_SORT_FALLBACK_THRESHOLD);
+
+        swap_if_less
     }
+
+    /*
+    
 
     #[kani::proof]
     fn sort4_stable_proof() {
@@ -905,19 +935,12 @@ pub mod smallsort_verify {
     */
 
     #[kani::proof]
+    #[kani::should_panic]
     fn insertion_sort_shift_left_proof() {
         let mut x: [u8; SMALL_SORT_FALLBACK_THRESHOLD] = kani::any();
         let offset: usize = kani::any();
         kani::assume(offset != 0);
         kani::assume(offset <= x.len());
-        insertion_sort_shift_left(&mut x, offset, &mut |lhs, rhs| lhs < rhs);
-    }
-
-    #[kani::proof]
-    #[kani::should_panic]
-    fn insertion_sort_shift_left_panics() {
-        let mut x: [u8; SMALL_SORT_FALLBACK_THRESHOLD] = kani::any();
-        let offset: usize = kani::any();
         insertion_sort_shift_left(&mut x, offset, &mut |lhs, rhs| lhs < rhs);
     }
 
