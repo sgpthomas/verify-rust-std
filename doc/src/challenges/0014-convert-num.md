@@ -37,12 +37,14 @@ macro_rules! impl_float_to_int {
 }
 ```
 
-The safety constraints referenced in the comments are that the input value must: ([[https://doc.rust-lang.org/std/primitive.f32.html#method.to_int_unchecked][docs]])
+The safety constraints referenced in the comments are that the input value must:
 - Not be NaN
 - Not be infinite
 - Be representable in the return type Int, after truncating off its fractional part
+
+These constraints are given in the [documenation](https://doc.rust-lang.org/std/primitive.f32.html#method.to_int_unchecked). 
  
-The intrinsic corresponds to the [[https://llvm.org/docs/LangRef.html#fptoui-to-instruction][fptoui]]/[[https://llvm.org/docs/LangRef.html#fptosi-to-instruction][fptosi]] LLVM instructions, which may be useful for reference.
+The intrinsic corresponds to the [fptoui](https://llvm.org/docs/LangRef.html#fptoui-to-instruction)/[fptosi](https://llvm.org/docs/LangRef.html#fptosi-to-instruction) LLVM instructions, which may be useful for reference.
 
 #### NonZero Conversions
 
