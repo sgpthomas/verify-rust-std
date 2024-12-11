@@ -42,7 +42,7 @@ The safety constraints referenced in the comments are that the input value must:
 - Not be infinite
 - Be representable in the return type Int, after truncating off its fractional part
 
-These constraints are given in the [documenation](https://doc.rust-lang.org/std/primitive.f32.html#method.to_int_unchecked). 
+These constraints are given in the [documentation](https://doc.rust-lang.org/std/primitive.f32.html#method.to_int_unchecked). 
  
 The intrinsic corresponds to the [fptoui](https://llvm.org/docs/LangRef.html#fptoui-to-instruction)/[fptosi](https://llvm.org/docs/LangRef.html#fptosi-to-instruction) LLVM instructions, which may be useful for reference.
 
