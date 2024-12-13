@@ -16,41 +16,9 @@ There are three classes of conversions that use unsafe code. All conversions use
 
 ### Success Criteria
 
-#### Safety for Float to Int
-
-```rust
-macro_rules! impl_float_to_int {
-    ($Float:ty => $($Int:ty),+) => {
-        #[unstable(feature = "convert_float_to_int", issue = "67057")]
-        impl private::Sealed for $Float {}
-        $(
-            #[unstable(feature = "convert_float_to_int", issue = "67057")]
-            impl FloatToInt<$Int> for $Float {
-                #[inline]
-                unsafe fn to_int_unchecked(self) -> $Int {
-                    // SAFETY: the safety contract must be upheld by the caller.
-                    unsafe { crate::intrinsics::float_to_int_unchecked(self) }
-                }
-            }
-        )+
-    }
-}
-```
-
-The safety constraints referenced in the comments are that the input value must:
-- Not be NaN
-- Not be infinite
-- Be representable in the return type Int, after truncating off its fractional part
-
-These constraints are given in the [documentation](https://doc.rust-lang.org/std/primitive.f32.html#method.to_int_unchecked). 
- 
-The intrinsic corresponds to the [fptoui](https://llvm.org/docs/LangRef.html#fptoui-to-instruction)/[fptosi](https://llvm.org/docs/LangRef.html#fptosi-to-instruction) LLVM instructions, which may be useful for reference.
-
-#### NonZero Conversions
-
 Write a type invariant for `core::num::NonZero`, then write harnesses for all `nonzero` conversions.
 
-There are two macros that implement these conversions: an infallible and fallible version. These are all of the types for which conversions are implemented. You should be able to use the macro to generate the function contracts. 
+Write proof contracts for each NonZero primitive conversion, listed in full below. These conversions are implemented through two macros: `impl_nonzero_int_from_nonzero_int!` and `impl_nonzero_int_try_from_nonzero_int!`. For contracts using `impl_nonzero_int_from_nonzero_int!` there should be one contract for each implemented conversion. For contracts using `impl_nonzero_int_try_from_nonzero_int!` there should be two contracts for each conversion, one with an assumption that guarantees the absence of a panic and one with no assumption that is marked by a `#[should_panic]` attribute. 
 
 non-zero unsigned integer -> non-zero unsigned integer
 - `impl_nonzero_int_from_nonzero_int!(u8 => u16);`
@@ -93,7 +61,7 @@ non-zero unsigned -> non-zero signed integer
 - `impl_nonzero_int_from_nonzero_int!(u32 => i128);`
 - `impl_nonzero_int_from_nonzero_int!(u64 => i128);`
 
-There are also the fallible versions.
+There are also the fallible versions. Remember to cover both the panicking and non-panicking cases. 
 
 unsigned non-zero integer -> unsigned non-zero integer
 - `impl_nonzero_int_try_from_nonzero_int!(u16 => u8);`
@@ -124,6 +92,37 @@ signed non-zero integer -> unsigned non-zero integer
 - `impl_nonzero_int_try_from_nonzero_int!(i64 => u8, u16, u32, u64, u128, usize);`
 - `impl_nonzero_int_try_from_nonzero_int!(i128 => u8, u16, u32, u64, u128, usize);`
 - `impl_nonzero_int_try_from_nonzero_int!(isize => u8, u16, u32, u64, u128, usize);`
+
+
+#### Safety for Float to Int
+
+```rust
+macro_rules! impl_float_to_int {
+    ($Float:ty => $($Int:ty),+) => {
+        #[unstable(feature = "convert_float_to_int", issue = "67057")]
+        impl private::Sealed for $Float {}
+        $(
+            #[unstable(feature = "convert_float_to_int", issue = "67057")]
+            impl FloatToInt<$Int> for $Float {
+                #[inline]
+                unsafe fn to_int_unchecked(self) -> $Int {
+                    // SAFETY: the safety contract must be upheld by the caller.
+                    unsafe { crate::intrinsics::float_to_int_unchecked(self) }
+                }
+            }
+        )+
+    }
+}
+```
+
+The safety constraints referenced in the comments are that the input value must:
+- Not be NaN
+- Not be infinite
+- Be representable in the return type Int, after truncating off its fractional part
+
+These constraints are given in the [documentation](https://doc.rust-lang.org/std/primitive.f32.html#method.to_int_unchecked). 
+ 
+The intrinsic corresponds to the [fptoui](https://llvm.org/docs/LangRef.html#fptoui-to-instruction)/[fptosi](https://llvm.org/docs/LangRef.html#fptosi-to-instruction) LLVM instructions, which may be useful for reference.
 
 ### List of UBs
 
