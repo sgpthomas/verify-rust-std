@@ -18,7 +18,11 @@ There are three classes of conversions that use unsafe code. All conversions use
 
 Write a type invariant for `core::num::NonZero`, then write harnesses for all `nonzero` conversions.
 
-Write proof contracts for each NonZero primitive conversion, listed in full below. These conversions are implemented through two macros: `impl_nonzero_int_from_nonzero_int!` and `impl_nonzero_int_try_from_nonzero_int!`. For contracts using `impl_nonzero_int_from_nonzero_int!` there should be one contract for each implemented conversion. For contracts using `impl_nonzero_int_try_from_nonzero_int!` there should be two contracts for each conversion, one with an assumption that guarantees the absence of a panic and one with no assumption that is marked by a `#[should_panic]` attribute. 
+Write proof contracts for each NonZero primitive conversion, listed in full below. These conversions are implemented through two macros: `impl_nonzero_int_from_nonzero_int!` and `impl_nonzero_int_try_from_nonzero_int!`. 
+
+For each invocation of `impl_nonzero_int_from_nonzero_int!`, prove that the conversion it implements does not cause undefined behavior nor panic. For example, for `impl_nonzero_int_from_nonzero_int!(u8 => u16);`, prove that calling `NonZero<u16>::from(small: NonZero<u8>)` does not cause undefined behavior nor panic for an arbitrary `small` that satisfies the `NonZero` type invariant.
+
+For each invocation of `impl_nonzero_int_try_from_nonzero_int!`, prove that the conversion it implements does not cause undefined behavior. For example, for `impl_nonzero_int_try_from_nonzero_int!(u16 => u8);`, prove that calling `NonZero<u8>::try_from(value: NonZero<u16>)` does not cause undefined behavior for an arbitrary `value` that satisfies the `NonZero` type invariant. Additionally, prove that if the `value` does not fit into the target type (e.g., `value` is too large to fit into a `NonZero<u8>`) that the function panics.
 
 non-zero unsigned integer -> non-zero unsigned integer
 - `impl_nonzero_int_from_nonzero_int!(u8 => u16);`
