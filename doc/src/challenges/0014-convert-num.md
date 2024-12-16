@@ -128,6 +128,11 @@ The safety constraints referenced in the comments are that the input value must:
 These constraints are given in the [documentation](https://doc.rust-lang.org/std/primitive.f32.html#method.to_int_unchecked). 
  
 The intrinsic corresponds to the [fptoui](https://llvm.org/docs/LangRef.html#fptoui-to-instruction)/[fptosi](https://llvm.org/docs/LangRef.html#fptosi-to-instruction) LLVM instructions, which may be useful for reference.
+Prove safety for each of the following conversions:
+impl_float_to_int!(f16 => u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize);
+impl_float_to_int!(f32 => u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize);
+impl_float_to_int!(f64 => u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize);
+impl_float_to_int!(f128 => u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize);
 
 ### List of UBs
 
