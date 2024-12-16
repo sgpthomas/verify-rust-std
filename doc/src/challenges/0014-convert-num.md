@@ -16,6 +16,7 @@ There are three classes of conversions that use unsafe code. All conversions use
 
 ### Success Criteria
 
+#### NonZero Conversions
 Write a type invariant for `core::num::NonZero`, then write harnesses for all `nonzero` conversions.
 
 Write proof contracts for each NonZero primitive conversion, listed in full below. These conversions are implemented through two macros: `impl_nonzero_int_from_nonzero_int!` and `impl_nonzero_int_try_from_nonzero_int!`. 
