@@ -12,7 +12,7 @@
 
 Verify the safety of number conversions in `core::convert::num`.
 
-There are three classes of conversions that use unsafe code. All conversions use macros to implement traits for primitive types in bulk. You will need to add contracts into the macros so that contracts are generated for each implementation. As the conversions are all macro generated, it is probably a good idea to write your own macro for generating the harnesses.
+There are two conversions that use unsafe code: conversion from NonZero integer to NonZero integer and conversion from floating point number to integer. All conversions use macros to implement traits for primitive types in bulk. You will need to add contracts into the macros so that contracts are generated for each implementation. As the conversions are all macro generated, it is probably a good idea to write your own macro for generating the harnesses.
 
 ### Success Criteria
 
@@ -129,10 +129,11 @@ These constraints are given in the [documentation](https://doc.rust-lang.org/std
  
 The intrinsic corresponds to the [fptoui](https://llvm.org/docs/LangRef.html#fptoui-to-instruction)/[fptosi](https://llvm.org/docs/LangRef.html#fptosi-to-instruction) LLVM instructions, which may be useful for reference.
 Prove safety for each of the following conversions:
-impl_float_to_int!(f16 => u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize);
-impl_float_to_int!(f32 => u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize);
-impl_float_to_int!(f64 => u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize);
-impl_float_to_int!(f128 => u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize);
+
+- `impl_float_to_int!(f16 => u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize)`
+- `impl_float_to_int!(f32 => u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize)`
+- `impl_float_to_int!(f64 => u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize)`
+- `impl_float_to_int!(f128 => u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize)`
 
 ### List of UBs
 
